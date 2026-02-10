@@ -80,6 +80,7 @@ export class Checkout {
           successUrl: options.successUrl,
           cancelUrl: options.cancelUrl,
           pendingUrl: options.pendingUrl,
+          failUrl: options.failUrl,
         }
       );
     } catch (err) {

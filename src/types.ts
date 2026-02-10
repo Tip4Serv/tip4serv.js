@@ -29,6 +29,7 @@ export interface CheckoutOptions {
   successUrl?: string;
   cancelUrl?: string;
   pendingUrl?: string;
+  failUrl?: string;
 }
 
 export interface Tip4ServError {
@@ -69,4 +70,5 @@ export interface RedirectUrls {
   successUrl?: string;
   cancelUrl?: string;
   pendingUrl?: string;
+  failUrl?: string;
 }
