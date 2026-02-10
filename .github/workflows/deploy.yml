@@ -1,0 +1,85 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [closed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    # Only run if: direct push to main, OR merged PR to main, OR manual trigger
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Generate version
+        id: version
+        run: |
+          VERSION="${{ vars.VERSION_MAJOR }}.${{ vars.VERSION_MINOR }}.${{ github.run_number }}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "🏷️ Version: $VERSION"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Update version in demo.html
+        run: |
+          sed -i 's|tip4serv.min.js"|tip4serv.min.js?v=${{ steps.version.outputs.version }}"|g' demo.html
+          echo "✅ Updated demo.html with version ${{ steps.version.outputs.version }}"
+
+      - name: Prepare deployment folder
+        run: |
+          mkdir -p deploy/assets
+          cp dist/tip4serv.js deploy/
+          cp dist/tip4serv.min.js deploy/
+          cp dist/tip4serv.esm.js deploy/
+          cp demo.html deploy/
+          cp thank-you.html deploy/
+          cp cancelled.html deploy/
+          cp -r assets/* deploy/assets/ 2>/dev/null || true
+          echo "js.tip4serv.com" > deploy/CNAME
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'deploy'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Summary
+        run: |
+          echo "## 🚀 Deployed v${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- \`https://js.tip4serv.com/tip4serv.min.js?v=${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`https://js.tip4serv.com/demo.html\`" >> $GITHUB_STEP_SUMMARY

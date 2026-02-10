@@ -1,0 +1,20 @@
+{
+  "name": "tip4serv-js",
+  "version": "1.0.0",
+  "description": "Simple checkout integration for Tip4Serv",
+  "main": "dist/tip4serv.js",
+  "module": "dist/tip4serv.esm.js",
+  "types": "dist/tip4serv.d.ts",
+  "scripts": {
+    "build": "node build.js",
+    "watch": "node build.js --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT"
+}
