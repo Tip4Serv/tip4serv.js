@@ -50,8 +50,12 @@ jobs:
 
       - name: Update version in demo.html
         run: |
-          sed -i 's|tip4serv.min.js"|tip4serv.min.js?v=${{ steps.version.outputs.version }}"|g' demo.html
-          echo "✅ Updated demo.html with version ${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          # Update script src
+          sed -i 's|tip4serv.min.js"|tip4serv.min.js?v='"$VERSION"'"|g' demo.html
+          # Update quickstart example
+          sed -i 's|src="tip4serv.js"|src="https://js.tip4serv.com/tip4serv.min.js?v='"$VERSION"'"|g' demo.html
+          echo "✅ Updated demo.html with version $VERSION"
 
       - name: Prepare deployment folder
         run: |
