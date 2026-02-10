@@ -135,34 +135,46 @@ export class PopupManager {
       if (!event.data || event.data.source !== MESSAGE_SOURCE) return;
 
       const { status, error } = event.data;
-      this.cleanup();
 
       switch (status) {
         case "success":
           if (this.redirect_urls.successUrl) {
+            this.cleanup(true);
             window.location.href = this.redirect_urls.successUrl;
           } else {
+            this.cleanup(false);
             this.callbacks.onSuccess?.();
           }
           break;
         case "pending":
           if (this.redirect_urls.pendingUrl) {
+            this.cleanup(true);
             window.location.href = this.redirect_urls.pendingUrl;
           } else {
+            this.cleanup(false);
             this.callbacks.onPending?.();
           }
           break;
         case "cancel":
           if (this.redirect_urls.cancelUrl) {
+            this.cleanup(true);
             window.location.href = this.redirect_urls.cancelUrl;
           } else {
+            this.cleanup(false);
             this.callbacks.onCancel?.();
           }
           break;
         case "fail":
-          this.callbacks.onFail?.(create_error("PAYMENT_FAILED", error || "Payment failed"));
+          if (this.redirect_urls.failUrl) {
+            this.cleanup(true);
+            window.location.href = this.redirect_urls.failUrl;
+          } else {
+            this.cleanup(false);
+            this.callbacks.onFail?.(create_error("PAYMENT_FAILED", error || "Payment failed"));
+          }
           break;
         default:
+          this.cleanup(false);
           this.callbacks.onFail?.(create_error("UNKNOWN_STATUS", `Unknown status: ${status}`));
       }
     };
@@ -174,7 +186,7 @@ export class PopupManager {
     this.timeout_id = setTimeout(() => {
       if (this.popup && !this.popup.closed) {
         log("Checkout timeout", "warn");
-        this.cleanup();
+        this.cleanup(true);
         this.callbacks.onFail?.(create_error("TIMEOUT", "Checkout session expired"));
       }
     }, POPUP_TIMEOUT);
@@ -191,7 +203,7 @@ export class PopupManager {
         setTimeout(() => {
           if (this.message_handler) {
             // Popup was closed without completing - treat as cancel
-            this.cleanup();
+            this.cleanup(true);
             if (this.redirect_urls.cancelUrl) {
               window.location.href = this.redirect_urls.cancelUrl;
             } else {
@@ -203,7 +215,7 @@ export class PopupManager {
     }, 500);
   }
 
-  private cleanup(): void {
+  private cleanup(closePopup: boolean = true): void {
     this.hide_overlay();
     if (this.message_handler) {
       window.removeEventListener("message", this.message_handler);
@@ -217,7 +229,7 @@ export class PopupManager {
       clearInterval(this.close_watcher_id);
       this.close_watcher_id = null;
     }
-    if (this.popup && !this.popup.closed) {
+    if (closePopup && this.popup && !this.popup.closed) {
       this.popup.close();
     }
     this.popup = null;

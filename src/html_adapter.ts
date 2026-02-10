@@ -56,6 +56,7 @@ export class HTMLAdapter {
       successUrl: button.dataset.successUrl,
       cancelUrl: button.dataset.cancelUrl,
       pendingUrl: button.dataset.pendingUrl,
+      failUrl: button.dataset.failUrl,
     };
 
     this.checkout.open(options);
