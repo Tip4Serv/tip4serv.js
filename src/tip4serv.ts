@@ -3,8 +3,9 @@
  * @version 1.0.0
  */
 
-import type { CheckoutOptions } from "./types";
+import type { CheckoutOptions, CartAddOptions, CartOpenOptions } from "./types";
 import { Checkout } from "./checkout";
+import { Cart } from "./cart";
 import { HTMLAdapter } from "./html_adapter";
 
 // ============================================================================
@@ -12,7 +13,8 @@ import { HTMLAdapter } from "./html_adapter";
 // ============================================================================
 
 const checkout_instance = new Checkout();
-const html_adapter = new HTMLAdapter(checkout_instance);
+const cart_instance = new Cart(checkout_instance);
+const html_adapter = new HTMLAdapter(checkout_instance, cart_instance);
 
 // Auto-init HTML adapter
 html_adapter.init();
@@ -24,6 +26,11 @@ html_adapter.init();
 const Tip4Serv = {
   Checkout: {
     open: (options: CheckoutOptions) => checkout_instance.open(options),
+    Cart: {
+      Add: (options: CartAddOptions) => cart_instance.add(options),
+      Open: (options?: CartOpenOptions) => cart_instance.open(options),
+      Clear: () => cart_instance.clear(),
+    },
   },
   version: "1.0.0",
 };

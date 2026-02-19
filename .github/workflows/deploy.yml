@@ -43,14 +43,17 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Update version in demo.html
+      - name: Update version in demo pages
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          # Update script src
+          # demo.html
           sed -i 's|tip4serv.min.js"|tip4serv.min.js?v='"$VERSION"'"|g' demo.html
-          # Update quickstart example
           sed -i 's|src="tip4serv.js"|src="https://js.tip4serv.com/tip4serv.min.js?v='"$VERSION"'"|g' demo.html
-          echo "✅ Updated demo.html with version $VERSION"
+          # demo-cart.html
+          sed -i 's|tip4serv.min.js"|tip4serv.min.js?v='"$VERSION"'"|g' demo-cart.html
+          # LLM.txt
+          sed -i 's|tip4serv.min.js"|tip4serv.min.js?v='"$VERSION"'"|g' LLM.txt
+          echo "✅ Updated demo pages with version $VERSION"
 
       - name: Prepare deployment folder
         run: |
@@ -59,8 +62,10 @@ jobs:
           cp dist/tip4serv.min.js deploy/
           cp dist/tip4serv.esm.js deploy/
           cp demo.html deploy/
+          cp demo-cart.html deploy/
           cp thank-you.html deploy/
           cp cancelled.html deploy/
+          cp LLM.txt deploy/
           cp -r assets/* deploy/assets/ 2>/dev/null || true
           echo "js.tip4serv.com" > deploy/CNAME
 
@@ -82,3 +87,4 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- \`https://js.tip4serv.com/tip4serv.min.js?v=${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- \`https://js.tip4serv.com/demo.html\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`https://js.tip4serv.com/demo-cart.html\`" >> $GITHUB_STEP_SUMMARY
