@@ -1,0 +1,391 @@
+# Tip4Serv.js — AI Context File
+
+You are helping a developer integrate Tip4Serv.js, a lightweight JavaScript checkout library for Tip4Serv game stores.
+
+---
+
+## What is Tip4Serv.js?
+
+A drop-in checkout script that opens a secure payment popup. Works in two modes:
+- **HTML Mode** — zero JS, just add classes and data attributes to buttons
+- **JS Mode** — full control via `Tip4Serv.Checkout.open()` and Cart API
+
+---
+
+## Setup
+
+Add this to any HTML page:
+
+```html
+<script src="https://js.tip4serv.com/tip4serv.min.js" data-store-id="YOUR_STORE_ID"></script>
+```
+
+The `data-store-id` attribute is required. Find it in the Tip4Serv dashboard.
+
+---
+
+## All data attributes (HTML Mode)
+
+| Attribute              | Type    | Description                              |
+|------------------------|---------|------------------------------------------|
+| data-product           | string  | Product slug or numeric ID (required)    |
+| data-quantity           | number  | Quantity (default: 1)                    |
+| data-subscription       | boolean | "false" = one-time payment               |
+| data-donation-amount    | number  | Donation amount (for donation products)  |
+| data-server-selection   | number  | Server ID to preselect                   |
+| data-custom-fields      | JSON    | Custom fields as JSON string             |
+| data-success-url        | string  | Redirect URL on success                  |
+| data-cancel-url         | string  | Redirect URL on cancel                   |
+| data-pending-url        | string  | Redirect URL on pending                  |
+| data-fail-url           | string  | Redirect URL on failure                  |
+
+---
+
+## All JS options for `Tip4Serv.Checkout.open(options)`
+
+```ts
+{
+  storeId?: number;             // Override script tag store ID
+  product?: string | number;    // Single product slug or ID
+  products?: ProductOptions[];  // Multiple products
+  quantity?: number;            // Quantity for single product
+  subscription?: boolean;       // false = one-time, true/undefined = subscription
+  donationAmount?: number;      // Donation amount
+  serverSelection?: number;     // Server ID
+  customFields?: Record<string, string | number | boolean>;
+
+  // Callbacks (JS mode)
+  onSuccess?: () => void;
+  onPending?: () => void;
+  onCancel?: () => void;
+  onFail?: (error: { code: string; message: string }) => void;
+
+  // Redirect URLs (alternative to callbacks)
+  successUrl?: string;
+  cancelUrl?: string;
+  pendingUrl?: string;
+  failUrl?: string;
+}
+```
+
+---
+
+## Key behaviors
+
+- **Popup checkout**: Opens a centered popup window. If blocked, falls back to redirect.
+- **Subscription logic**: By default products (Which are subscriptions) will be bought as subscriptions. Set `subscription: false` for one-time purchases.
+- **Donation amounts**: Use a dot for decimals: `10.5` (not `10,5`).
+- **Cart rules**: Adding a subscription clears the entire cart (subscriptions are always alone). Adding a one-time product when cart has a subscription clears the subscription first. Duplicate products (With every identifical parameters) have their quantities merged.
+- **Cart storage**: Uses `localStorage` with key `tip4servjs-cart`.
+- **Cart auto-clear**: Cart is cleared on successful payment (both callback and redirect modes).
+- **Button states**: `.tip4serv-open-cart-btn` buttons are automatically disabled/enabled based on cart contents.
+
+---
+
+## Error codes
+
+| Code             | Meaning                                      |
+|------------------|----------------------------------------------|
+| MISSING_STORE_ID | No store ID found in script tag or options   |
+| MISSING_PRODUCT  | No product specified                         |
+| API_ERROR        | API returned an error                        |
+| EMPTY_CART       | Tried to open checkout with empty cart       |
+
+---
+
+## HTML Mode Examples
+
+### Simple Purchase
+
+The most basic example. Just specify the product slug or ID.
+
+```html
+<button class="tip4serv-buy-btn" data-product="vip">
+  Buy VIP
+</button>
+```
+
+### With Quantity
+
+Let customers buy multiple units of the same product at once.
+
+```html
+<button class="tip4serv-buy-btn" data-product="50-coins" data-quantity="5">
+  Buy 50-coins x5
+</button>
+```
+
+### Product by ID
+
+Use the numeric product ID instead of the slug. Useful if your slug might change.
+
+```html
+<button class="tip4serv-buy-btn" data-product="14">
+  Buy Product #14
+</button>
+```
+
+### Donation
+
+For donation products, specify the amount the customer will pay. Use a dot: `10.5` (not `10,5`).
+
+```html
+<button class="tip4serv-buy-btn" data-product="one-time-donation" data-donation-amount="10.5">
+  Donate $10.50
+</button>
+```
+
+### Server Selection
+
+Pre-select a specific game server for the purchase. Useful when you have multiple servers.
+
+```html
+<button class="tip4serv-buy-btn" data-product="bugatti" data-server-selection="615">
+  Buy Bugatti (Server 1)
+</button>
+```
+
+### Subscription without Recurrence
+
+Sell a subscription product as a one-time purchase. This disables auto-renewal.
+
+```html
+<button class="tip4serv-buy-btn" data-product="vip" data-subscription="false">
+  VIP Monthly (one-time payment)
+</button>
+```
+
+### With Redirect URLs
+
+Redirect customers to custom pages after payment success or cancellation.
+
+```html
+<button class="tip4serv-buy-btn" 
+        data-product="vip"
+        data-success-url="https://example.com/thank-you.html"
+        data-cancel-url="https://example.com/cancelled.html">
+  Buy VIP (with redirects)
+</button>
+```
+
+---
+
+## JavaScript Mode Examples
+
+### Simple Purchase
+
+The simplest JS call — just specify the product.
+
+```js
+Tip4Serv.Checkout.open({
+  product: "vip"
+});
+```
+
+### Without Auto-Renewal
+
+Disable auto-renewal for subscription products. The customer pays once, no recurring charge.
+
+```js
+Tip4Serv.Checkout.open({
+  product: "vip",
+  subscription: false
+});
+```
+
+### Simple Purchase with Callbacks
+
+Handle payment results in your code with callbacks. React to success, pending, cancel, or failure.
+
+```js
+Tip4Serv.Checkout.open({
+  product: "vip",
+  onSuccess: () => console.log("Payment successful!"),
+  onPending: () => console.log("Payment pending..."),
+  onCancel: () => console.log("Payment cancelled"),
+  onFail: (err) => console.error(err)
+});
+```
+
+### Multi-product Cart (simple)
+
+Buy multiple different products in a single checkout using an array of slugs.
+
+```js
+Tip4Serv.Checkout.open({
+  products: ["mystery-box-lvl-5", "mystery-box-lvl-10", "mystery-box-lvl-15"]
+});
+```
+
+### Cart with Options (advanced)
+
+Advanced cart with per-product options: quantities, server selection, and donations combined.
+
+```js
+Tip4Serv.Checkout.open({
+  products: [
+    { product: "50-coins", quantity: 5 },
+    { product: "bugatti", quantity: 2, serverSelection: 615 },
+    { product: "one-time-donation", donationAmount: 10.5 }
+  ],
+  onSuccess: () => console.log("Success!"),
+  onPending: () => console.log("Pending verification..."),
+  onCancel: () => console.log("Cancelled"),
+  onFail: (err) => console.error(err)
+});
+```
+
+### With Explicit storeId
+
+Pass the store ID directly in the options instead of using `data-store-id` on the script tag.
+
+```js
+Tip4Serv.Checkout.open({
+  storeId: 31,
+  product: "vip",
+  quantity: 1
+});
+```
+
+---
+
+## Custom Fields Examples
+
+Custom fields let you customize a product (color, options, text fields, etc.). Format: `{ FIELD_ID: VALUE }`.
+
+### Product with Custom Fields
+
+```js
+Tip4Serv.Checkout.open({
+  product: "luxor",
+  customFields: {
+    1: true,        // Safety enabled (checkbox)
+    2: "2",         // Blue color (selection)
+    3: 150,         // 150 liters fuel (number)
+    4: "ABC-1234"   // License plate (text)
+  },
+  onSuccess: () => console.log("Vehicle ordered!"),
+  onFail: (err) => console.error(err)
+});
+```
+
+### Cart with Custom Fields per Product
+
+Each product in the cart can have its own custom fields. Perfect for configurable products.
+
+```js
+Tip4Serv.Checkout.open({
+  products: [
+    {
+      product: "luxor",
+      customFields: {
+        1: true,       // Safety ON
+        2: "1",        // Red
+        3: 200,        // 200L fuel
+        4: "LUXOR-01"  // Plate
+      }
+    },
+    {
+      product: "swift",
+      serverSelection: 611,
+      customFields: {
+        1: false,      // Safety OFF
+        2: "3",        // Green
+        3: 180,        // 180L fuel
+        4: "SWIFT-99"  // Plate
+      }
+    }
+  ],
+  onSuccess: () => console.log("Vehicles ordered!")
+});
+```
+
+---
+
+## Cart System — HTML Mode
+
+Use `tip4serv-add-cart-btn` class to add items, and `tip4serv-open-cart-btn` to open checkout. Same `data-*` attributes as buy buttons.
+
+### Add to Cart & Checkout
+
+Click products to add them to the cart, then open checkout. Adding the same product twice stacks the quantity.
+
+```html
+<!-- Add to cart buttons -->
+<button class="tip4serv-add-cart-btn" data-product="vip">
+  Add to Cart
+</button>
+
+<button class="tip4serv-add-cart-btn" data-product="50-coins" data-quantity="5" data-subscription="false">
+  Add to Cart
+</button>
+
+<button class="tip4serv-add-cart-btn" data-product="15-mystery-box-lvl-5" data-subscription="false">
+  Add to Cart
+</button>
+
+<!-- Open checkout with cart contents -->
+<button class="tip4serv-open-cart-btn"
+        data-success-url="https://example.com/thank-you.html"
+        data-cancel-url="https://example.com/cancelled.html">
+  Open Checkout
+</button>
+```
+
+---
+
+## Cart System — JavaScript Mode
+
+Use `Tip4Serv.Checkout.Cart.Add()` to add products, `Tip4Serv.Checkout.Cart.Open()` to checkout, and `Tip4Serv.Checkout.Cart.Clear()` to empty the cart.
+
+### Add & Open with Callbacks
+
+Add products via JS, then open cart with callbacks to handle results.
+
+```js
+// Add a subscription product
+Tip4Serv.Checkout.Cart.Add({
+  product: "vip"
+});
+
+// Add with quantity (one-time)
+Tip4Serv.Checkout.Cart.Add({
+  product: "50-coins",
+  quantity: 5,
+  subscription: false
+});
+
+// Add a one-time product
+Tip4Serv.Checkout.Cart.Add({
+  product: "15-mystery-box-lvl-5",
+  subscription: false
+});
+
+// Open checkout with callbacks
+Tip4Serv.Checkout.Cart.Open({
+  onSuccess: () => console.log("Paid! Cart cleared."),
+  onCancel: () => console.log("Cancelled")
+});
+
+// Clear cart manually
+Tip4Serv.Checkout.Cart.Clear();
+```
+
+---
+
+## Quick answers for common tasks
+
+**"How do I add a buy button?"**
+→ `<button class="tip4serv-buy-btn" data-product="SLUG">Buy</button>`
+
+**"How do I make a one-time (non-subscription) purchase?"**
+→ Add `data-subscription="false"` or set `subscription: false` in JS.
+
+**"How do I handle payment result?"**
+→ Use `onSuccess`/`onCancel` callbacks in JS mode, or `data-success-url`/`data-cancel-url` in HTML mode.
+
+**"How do I use the cart?"**
+→ Use `tip4serv-add-cart-btn` to add items, `tip4serv-open-cart-btn` to checkout. Or use `Tip4Serv.Checkout.Cart.Add()` / `.Open()` in JS.
+
+**"How do I pass custom fields?"**
+→ HTML: `data-custom-fields='{"field_id": "value"}'`. JS: `customFields: { 123: "value" }`.

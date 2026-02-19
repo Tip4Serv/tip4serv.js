@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tip4Serv.js — Cart System</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      background: #ffffff;
+      color: #334155;
+      line-height: 1.6;
+    }
+    h1 { color: #0f172a; font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+    h1 span { color: #5c54fc; }
+    .subtitle { color: #64748b; font-size: 1.1rem; margin-bottom: 3rem; }
+    h2 {
+      color: #0f172a; font-size: 1.5rem; font-weight: 600;
+      margin-top: 3rem; margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem; border-bottom: 1px solid #e2e8f0;
+    }
+    h3 { color: #1e293b; font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
+    .demo-section {
+      background: #ffffff; padding: 1.5rem; border-radius: 8px;
+      margin-bottom: 1.25rem; border: 1px solid #e2e8f0;
+    }
+    .demo-section:hover { border-color: #cbd5e1; }
+    .tip4serv-add-cart-btn, .tip4serv-open-cart-btn, .js-btn {
+      background: #5c54fc; color: white; border: none;
+      padding: 10px 20px; border-radius: 6px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .tip4serv-add-cart-btn:hover, .tip4serv-open-cart-btn:hover:not(:disabled), .js-btn:hover {
+      background: #4a42e0;
+    }
+    .tip4serv-open-cart-btn:disabled {
+      background: #cbd5e1; cursor: not-allowed; opacity: 0.7;
+    }
+    .clear-btn {
+      background: #ef4444; color: white; border: none;
+      padding: 10px 20px; border-radius: 6px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .clear-btn:hover { background: #dc2626; }
+    code {
+      background: #e4f0f1; color: #5c54fc;
+      padding: 2px 6px; border-radius: 4px;
+      font-size: 13px; font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    pre {
+      background: #0f172a; color: #e2e8f0;
+      padding: 1.25rem; border-radius: 8px; overflow-x: auto;
+      font-size: 13px; line-height: 1.7; margin-top: 1rem;
+      font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .result {
+      margin-top: 0.75rem; padding: 10px 14px;
+      border-radius: 6px; font-size: 13px;
+      display: none; font-weight: 500;
+    }
+    .result.show { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .result.show.error { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+    .result.show.info { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+    .example-desc { color: #64748b; font-size: 14px; margin-bottom: 1rem; }
+    .section-intro {
+      background: #f8fafc; padding: 1.25rem; border-radius: 8px;
+      margin-bottom: 2rem; border-left: 3px solid #5c54fc;
+    }
+    .section-intro p { font-size: 14px; color: #475569; margin: 0.25rem 0; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge-beginner { background: #dcfce7; color: #166534; }
+    .badge-intermediate { background: #fef3c7; color: #92400e; }
+    .badge-expert { background: #fee2e2; color: #991b1b; }
+    .h2-with-badge { display: flex; align-items: center; gap: 10px; }
+    .h3-with-badge { display: flex; align-items: center; gap: 8px; }
+    .warning-box {
+      background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
+      padding: 1rem 1.25rem; margin-bottom: 2rem; font-size: 14px; color: #92400e;
+    }
+    /* Cart preview */
+    .cart-preview {
+      background: #f1f5f9; border-radius: 8px; padding: 1rem 1.25rem;
+      margin: 1rem 0; font-size: 14px; border: 1px solid #e2e8f0;
+      min-height: 40px;
+    }
+    .cart-preview-title {
+      font-weight: 600; color: #0f172a; margin-bottom: 0.5rem;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .cart-preview-items { color: #475569; }
+    .cart-preview-items li {
+      padding: 4px 0; border-bottom: 1px solid #e2e8f0;
+      display: flex; justify-content: space-between;
+    }
+    .cart-preview-items li:last-child { border: none; }
+    .cart-empty { color: #94a3b8; font-style: italic; }
+    .product-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1rem; margin-bottom: 1.5rem;
+    }
+    .product-card {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 1.25rem; text-align: center;
+    }
+    .product-card h4 { margin: 0 0 0.5rem 0; font-size: 16px; color: #0f172a; }
+    .product-card p { margin: 0 0 1rem 0; font-size: 13px; color: #64748b; }
+    .btn-row {
+      display: flex; gap: 0.75rem; align-items: center;
+      flex-wrap: wrap; margin-top: 1rem;
+    }
+    @media (max-width: 640px) {
+      .product-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Syntax highlighting */
+    .hljs-property { color: #7dd3fc; }
+    .hljs-string { color: #86efac; }
+    .hljs-number { color: #fca5a5; }
+    .hljs-boolean { color: #fca5a5; }
+    .hljs-keyword { color: #c4b5fd; }
+    .hljs-function { color: #fde68a; }
+    .hljs-punctuation { color: #94a3b8; }
+    .hljs-comment { color: #64748b; font-style: italic; }
+    .hljs-tag { color: #f472b6; }
+    .hljs-attr { color: #7dd3fc; }
+    .hljs-attr-value { color: #86efac; }
+    .hljs-text { color: #e2e8f0; }
+  </style>
+</head>
+<body>
+  <!-- ⚠️ Change this to your actual store ID! -->
+  <script src="tip4serv.min.js" data-store-id="31"></script>
+
+  <h1><span>Tip4Serv.js</span> Cart System</h1>
+  <p class="subtitle">Add products to a cart, then checkout all at once.</p>
+
+
+  <!-- ============================================ -->
+  <!-- HTML MODE -->
+  <!-- ============================================ -->
+
+  <h2 class="h2-with-badge">HTML Mode <span class="badge badge-beginner">Beginner</span></h2>
+
+  <div class="section-intro">
+    <p>Use <code>tip4serv-add-cart-btn</code> class to add items, and <code>tip4serv-open-cart-btn</code> to open checkout. Same <code>data-*</code> attributes as buy buttons.</p>
+  </div>
+
+  <div class="demo-section">
+    <h3 class="h3-with-badge">Add to Cart & Checkout <span class="badge badge-beginner">Beginner</span></h3>
+    <p class="example-desc">Click products to add them to the cart, then open checkout. Try adding the same product twice — quantity stacks!</p>
+
+    <div class="product-grid">
+      <div class="product-card">
+        <h4>VIP</h4>
+        <p>Subscription product</p>
+        <button class="tip4serv-add-cart-btn" data-product="vip" onclick="refreshCartPreview()">
+          Add to Cart
+        </button>
+      </div>
+      <div class="product-card">
+        <h4>50 Coins x5</h4>
+        <p>Chosen Quantity: 5</p>
+        <button class="tip4serv-add-cart-btn" data-product="50-coins" data-quantity="5" data-subscription="false" onclick="refreshCartPreview()">
+          Add to Cart
+        </button>
+      </div>
+      <div class="product-card">
+        <h4>15 Mystery Box LVL 5</h4>
+        <p>One-time product</p>
+        <button class="tip4serv-add-cart-btn" data-product="15-mystery-box-lvl-5" data-subscription="false" onclick="refreshCartPreview()">
+          Add to Cart
+        </button>
+      </div>
+    </div>
+
+    <!-- Cart preview -->
+    <div class="cart-preview">
+      <div class="cart-preview-title">Cart contents:</div>
+      <div id="cart-preview-html" class="cart-preview-items">
+        <span class="cart-empty">Empty</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="tip4serv-open-cart-btn"
+              data-success-url="https://js.tip4serv.com/thank-you.html?return=https://js.tip4serv.com/demo-cart.html"
+              data-cancel-url="https://js.tip4serv.com/cancelled.html?return=https://js.tip4serv.com/demo-cart.html"
+              onclick="refreshCartPreview()">
+        Open Checkout
+      </button>
+      <button class="clear-btn" onclick="Tip4Serv.Checkout.Cart.Clear(); refreshCartPreview();">
+        Clear Cart
+      </button>
+    </div>
+
+    <pre><span class="hljs-comment">&lt;!-- Add to cart buttons --&gt;</span>
+<span class="hljs-punctuation">&lt;</span><span class="hljs-tag">button</span> <span class="hljs-attr">class</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"tip4serv-add-cart-btn"</span> <span class="hljs-attr">data-product</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"vip"</span><span class="hljs-punctuation">&gt;</span>
+  <span class="hljs-text">Add to Cart</span>
+<span class="hljs-punctuation">&lt;/</span><span class="hljs-tag">button</span><span class="hljs-punctuation">&gt;</span>
+
+<span class="hljs-punctuation">&lt;</span><span class="hljs-tag">button</span> <span class="hljs-attr">class</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"tip4serv-add-cart-btn"</span> <span class="hljs-attr">data-product</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"50-coins"</span> <span class="hljs-attr">data-quantity</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"5"</span> <span class="hljs-attr">data-subscription</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"false"</span><span class="hljs-punctuation">&gt;</span>
+  <span class="hljs-text">Add to Cart</span>
+<span class="hljs-punctuation">&lt;/</span><span class="hljs-tag">button</span><span class="hljs-punctuation">&gt;</span>
+
+<span class="hljs-punctuation">&lt;</span><span class="hljs-tag">button</span> <span class="hljs-attr">class</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"tip4serv-add-cart-btn"</span> <span class="hljs-attr">data-product</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"15-mystery-box-lvl-5"</span> <span class="hljs-attr">data-subscription</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"false"</span><span class="hljs-punctuation">&gt;</span>
+  <span class="hljs-text">Add to Cart</span>
+<span class="hljs-punctuation">&lt;/</span><span class="hljs-tag">button</span><span class="hljs-punctuation">&gt;</span>
+
+<span class="hljs-comment">&lt;!-- Open checkout with cart contents --&gt;</span>
+<span class="hljs-punctuation">&lt;</span><span class="hljs-tag">button</span> <span class="hljs-attr">class</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"tip4serv-open-cart-btn"</span>
+        <span class="hljs-attr">data-success-url</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"https://js.tip4serv.com/thank-you.html?return=https://js.tip4serv.com/demo-cart.html"</span>
+        <span class="hljs-attr">data-cancel-url</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"https://js.tip4serv.com/cancelled.html?return=https://js.tip4serv.com/demo-cart.html"</span><span class="hljs-punctuation">&gt;</span>
+  <span class="hljs-text">Open Checkout</span>
+<span class="hljs-punctuation">&lt;/</span><span class="hljs-tag">button</span><span class="hljs-punctuation">&gt;</span></pre>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- JAVASCRIPT MODE -->
+  <!-- ============================================ -->
+
+  <h2 class="h2-with-badge">JavaScript Mode <span class="badge badge-intermediate">Intermediate</span></h2>
+
+  <div class="section-intro">
+    <p>Use <code>Tip4Serv.Checkout.Cart.Add()</code> to add products, <code>Tip4Serv.Checkout.Cart.Open()</code> to checkout, and <code>Tip4Serv.Checkout.Cart.Clear()</code> to empty the cart.</p>
+  </div>
+
+  <div class="demo-section">
+    <h3 class="h3-with-badge">Add & Open with Callbacks <span class="badge badge-intermediate">Intermediate</span></h3>
+    <p class="example-desc">Add products via JS, then open cart with callbacks to handle results.</p>
+
+    <div class="product-grid">
+      <div class="product-card">
+        <h4>VIP</h4>
+        <p>Subscription product</p>
+        <button class="js-btn" onclick="addVIP()">Add to Cart</button>
+      </div>
+      <div class="product-card">
+        <h4>50 Coins x5</h4>
+        <p>Chosen Quantity: 5</p>
+        <button class="js-btn" onclick="addCoins()">Add to Cart</button>
+      </div>
+      <div class="product-card">
+        <h4>15 Mystery Box LVL 5</h4>
+        <p>One-time product</p>
+        <button class="js-btn" onclick="addMysteryBox()">Add to Cart</button>
+      </div>
+    </div>
+
+    <!-- Cart preview -->
+    <div class="cart-preview">
+      <div class="cart-preview-title">Cart contents:</div>
+      <div id="cart-preview-js" class="cart-preview-items">
+        <span class="cart-empty">Empty</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="js-btn" onclick="openCart()">Open Checkout</button>
+      <button class="clear-btn" onclick="clearCart()">Clear Cart</button>
+    </div>
+    <div id="result-js" class="result"></div>
+
+    <pre><span class="hljs-comment">// Add a subscription product</span>
+<span class="hljs-property">Tip4Serv</span><span class="hljs-punctuation">.</span><span class="hljs-property">Checkout</span><span class="hljs-punctuation">.</span><span class="hljs-property">Cart</span><span class="hljs-punctuation">.</span><span class="hljs-function">Add</span><span class="hljs-punctuation">({</span>
+  <span class="hljs-property">product</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"vip"</span>
+<span class="hljs-punctuation">});</span>
+
+<span class="hljs-comment">// Add with quantity (one-time)</span>
+<span class="hljs-property">Tip4Serv</span><span class="hljs-punctuation">.</span><span class="hljs-property">Checkout</span><span class="hljs-punctuation">.</span><span class="hljs-property">Cart</span><span class="hljs-punctuation">.</span><span class="hljs-function">Add</span><span class="hljs-punctuation">({</span>
+  <span class="hljs-property">product</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"50-coins"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-property">quantity</span><span class="hljs-punctuation">:</span> <span class="hljs-number">5</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-property">subscription</span><span class="hljs-punctuation">:</span> <span class="hljs-boolean">false</span>
+<span class="hljs-punctuation">});</span>
+
+<span class="hljs-comment">// Add a one-time product</span>
+<span class="hljs-property">Tip4Serv</span><span class="hljs-punctuation">.</span><span class="hljs-property">Checkout</span><span class="hljs-punctuation">.</span><span class="hljs-property">Cart</span><span class="hljs-punctuation">.</span><span class="hljs-function">Add</span><span class="hljs-punctuation">({</span>
+  <span class="hljs-property">product</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"15-mystery-box-lvl-5"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-property">subscription</span><span class="hljs-punctuation">:</span> <span class="hljs-boolean">false</span>
+<span class="hljs-punctuation">});</span>
+
+<span class="hljs-comment">// Open checkout with callbacks</span>
+<span class="hljs-property">Tip4Serv</span><span class="hljs-punctuation">.</span><span class="hljs-property">Checkout</span><span class="hljs-punctuation">.</span><span class="hljs-property">Cart</span><span class="hljs-punctuation">.</span><span class="hljs-function">Open</span><span class="hljs-punctuation">({</span>
+  <span class="hljs-property">onSuccess</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">()</span> <span class="hljs-keyword">=&gt;</span> <span class="hljs-property">console</span><span class="hljs-punctuation">.</span><span class="hljs-function">log</span><span class="hljs-punctuation">(</span><span class="hljs-string">"Paid! Cart cleared."</span><span class="hljs-punctuation">),</span>
+  <span class="hljs-property">onCancel</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">()</span> <span class="hljs-keyword">=&gt;</span> <span class="hljs-property">console</span><span class="hljs-punctuation">.</span><span class="hljs-function">log</span><span class="hljs-punctuation">(</span><span class="hljs-string">"Cancelled"</span><span class="hljs-punctuation">)</span>
+<span class="hljs-punctuation">});</span>
+
+<span class="hljs-comment">// Clear cart manually</span>
+<span class="hljs-property">Tip4Serv</span><span class="hljs-punctuation">.</span><span class="hljs-property">Checkout</span><span class="hljs-punctuation">.</span><span class="hljs-property">Cart</span><span class="hljs-punctuation">.</span><span class="hljs-function">Clear</span><span class="hljs-punctuation">();</span></pre>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- JAVASCRIPT -->
+  <!-- ============================================ -->
+
+  <script>
+    // =========== Cart preview ===========
+    function getCartItems() {
+      try {
+        const raw = localStorage.getItem("tip4servjs-cart");
+        return raw ? JSON.parse(raw) : [];
+      } catch { return []; }
+    }
+
+    function refreshCartPreview() {
+      // Small delay so localStorage has time to update
+      setTimeout(() => {
+        const items = getCartItems();
+        updatePreview("cart-preview-html", items);
+        updatePreview("cart-preview-js", items);
+      }, 50);
+    }
+
+    function updatePreview(elementId, items) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      if (items.length === 0) {
+        el.innerHTML = '<span class="cart-empty">Empty</span>';
+        return;
+      }
+      let html = '<ul style="list-style:none;padding:0;margin:0;">';
+      for (const item of items) {
+        const sub = item.subscription === false ? "" : " (subscription)";
+        const server = item.serverSelection ? ` (server ${item.serverSelection})` : "";
+        html += `<li><span>${item.product}${server}${sub}</span><span>x${item.quantity}</span></li>`;
+      }
+      html += '</ul>';
+      el.innerHTML = html;
+    }
+
+    function showResult(id, message, type = '') {
+      const el = document.getElementById(id);
+      el.textContent = message;
+      el.className = 'result show' + (type ? ' ' + type : '');
+    }
+
+    // =========== JS mode functions ===========
+    function addVIP() {
+      Tip4Serv.Checkout.Cart.Add({ product: "vip" });
+      refreshCartPreview();
+      showResult("result-js", "VIP added to cart", "info");
+    }
+
+    function addCoins() {
+      Tip4Serv.Checkout.Cart.Add({
+        product: "50-coins",
+        quantity: 5,
+        subscription: false
+      });
+      refreshCartPreview();
+      showResult("result-js", "50 Coins x5 added to cart", "info");
+    }
+
+    function addMysteryBox() {
+      Tip4Serv.Checkout.Cart.Add({
+        product: "15-mystery-box-lvl-5",
+        subscription: false
+      });
+      refreshCartPreview();
+      showResult("result-js", "15 Mystery Box LVL 5 added to cart", "info");
+    }
+
+    function openCart() {
+      Tip4Serv.Checkout.Cart.Open({
+        onSuccess: () => {
+          showResult("result-js", "✓ Payment successful! Cart cleared.");
+          refreshCartPreview();
+        },
+        onCancel: () => showResult("result-js", "✗ Checkout cancelled", "error"),
+        onFail: (err) => showResult("result-js", "✗ " + err.message, "error")
+      });
+    }
+
+    function clearCart() {
+      Tip4Serv.Checkout.Cart.Clear();
+      refreshCartPreview();
+      showResult("result-js", "🗑️ Cart cleared", "info");
+    }
+
+    // Refresh previews on page load
+    refreshCartPreview();
+  </script>
+
+  <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #e2e8f0; display: flex;">
+    <a href="demo.html" style="display: flex; flex: 1; align-items: center; gap: 16px; text-decoration: none; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 20px; transition: border-color 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.borderColor='#cbd5e1';this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)'" onmouseout="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+      <span style="color: #94a3b8; font-size: 18px;">‹</span>
+      <div>
+        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 2px;">Previous</div>
+        <div style="font-size: 15px; font-weight: 500; color: #0f172a;">Checkout Demo</div>
+      </div>
+    </a>
+  </div>
+
+</body>
+</html>

@@ -72,3 +72,35 @@ export interface RedirectUrls {
   pendingUrl?: string;
   failUrl?: string;
 }
+
+export interface CartAddOptions {
+  product: string | number;
+  quantity?: number;
+  subscription?: boolean;
+  donationAmount?: number;
+  serverSelection?: number;
+  customFields?: Record<number | string, string | number | boolean>;
+}
+
+export interface CartOpenOptions {
+  storeId?: number;
+  // Callbacks
+  onSuccess?: () => void;
+  onPending?: () => void;
+  onCancel?: () => void;
+  onFail?: (error: Tip4ServError) => void;
+  // URLs
+  successUrl?: string;
+  cancelUrl?: string;
+  pendingUrl?: string;
+  failUrl?: string;
+}
+
+export interface CartItem {
+  product: string | number;
+  quantity: number;
+  subscription?: boolean;
+  donationAmount?: number;
+  serverSelection?: number;
+  customFields?: Record<number | string, string | number | boolean>;
+}

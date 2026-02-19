@@ -382,6 +382,38 @@
     .lightbox-close:hover {
       opacity: 1;
     }
+    /* LLM copy banner */
+    .llm-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: #f0f0ff;
+      border: 1px dashed #5c54fc;
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      margin-bottom: 2rem;
+      font-size: 14px;
+      color: #475569;
+    }
+    .llm-banner span {
+      flex: 1;
+    }
+    .llm-copy-btn {
+      background: #5c54fc;
+      color: white;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s ease;
+    }
+    .llm-copy-btn:hover {
+      background: #4a42e0;
+    }
     @media (max-width: 640px) {
       .info-grid {
         grid-template-columns: 1fr;
@@ -402,19 +434,24 @@
   <h1><span>Tip4Serv.js</span> Demo</h1>
   <p class="subtitle">Integration examples for your store</p>
 
+  <div class="llm-banner">
+    <span>No time to read? Send this page to your AI agent.</span>
+    <button class="llm-copy-btn" onclick="copyLLM(this)">Copy for AI</button>
+  </div>
+
   <!-- Quickstart -->
   <div class="guide-box" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-color: #10b981;">
-    <h3>🚀 Quickstart (30 seconds)</h3>
+    <h3>Quickstart (30 seconds)</h3>
     <div style="font-size: 15px;">
       <p style="margin: 0 0 0.5rem 0;">Add this script tag to your page:</p>
       <code style="background: white; padding: 4px 8px; border-radius: 4px; display: inline-block;">&lt;script src="tip4serv.js" data-store-id="YOUR_STORE_ID"&gt;&lt;/script&gt;</code>
-      <p style="margin: 0.75rem 0 0 0; color: #64748b;">Find the necessary information (store ID, product slug) with the guide below. 👇</p>
+      <p style="margin: 0.75rem 0 0 0; color: #64748b;">Find the necessary information (store ID, product slug) with the guide below.</p>
     </div>
   </div>
 
   <!-- Getting Started - How to find IDs -->
   <div class="section-intro">
-    <h4>🔑 Before you start: Finding your IDs</h4>
+    <h4>Before you start: Finding your IDs</h4>
     <p>You'll need these values from your Tip4Serv dashboard to use the checkout:</p>
     <div class="info-grid">
       <div class="info-card">
@@ -432,7 +469,7 @@
   </div>
 
   <div class="guide-box">
-    <h3>📚 Difficulty Guide</h3>
+    <h3>Difficulty Guide</h3>
     <div class="guide-levels">
       <div class="guide-level">
         <span class="badge badge-beginner">Beginner</span>
@@ -530,14 +567,14 @@
     <p class="example-desc">Redirect customers to custom pages after payment success or cancellation.</p>
     <button class="tip4serv-buy-btn" 
             data-product="vip"
-            data-success-url="https://js.tip4serv.com/thank-you.html"
-            data-cancel-url="https://js.tip4serv.com/cancelled.html">
+            data-success-url="https://js.tip4serv.com/thank-you.html?return=https://js.tip4serv.com/demo.html"
+            data-cancel-url="https://js.tip4serv.com/cancelled.html?return=https://js.tip4serv.com/demo.html">
       Buy VIP (with redirects)
     </button>
     <pre><span class="hljs-punctuation">&lt;</span><span class="hljs-tag">button</span> <span class="hljs-attr">class</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"tip4serv-buy-btn"</span> 
         <span class="hljs-attr">data-product</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"vip"</span>
-        <span class="hljs-attr">data-success-url</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"https://js.tip4serv.com/thank-you.html"</span>
-        <span class="hljs-attr">data-cancel-url</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"https://js.tip4serv.com/cancelled.html"</span><span class="hljs-punctuation">&gt;</span>
+        <span class="hljs-attr">data-success-url</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"https://js.tip4serv.com/thank-you.html?return=https://js.tip4serv.com/demo.html"</span>
+        <span class="hljs-attr">data-cancel-url</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"https://js.tip4serv.com/cancelled.html?return=https://js.tip4serv.com/demo.html"</span><span class="hljs-punctuation">&gt;</span>
   <span class="hljs-text">Buy VIP (with redirects)</span>
 <span class="hljs-punctuation">&lt;/</span><span class="hljs-tag">button</span><span class="hljs-punctuation">&gt;</span></pre>
   </div>
@@ -1030,6 +1067,31 @@
       });
     }
   </script>
+
+  <script>
+    async function copyLLM(btn) {
+      try {
+        const res = await fetch('LLM.txt');
+        const text = await res.text();
+        await navigator.clipboard.writeText(text);
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy for AI', 2000);
+      } catch {
+        btn.textContent = 'Failed';
+        setTimeout(() => btn.textContent = 'Copy for AI', 2000);
+      }
+    }
+  </script>
+
+  <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #e2e8f0; display: flex;">
+    <a href="demo-cart.html" style="display: flex; flex: 1; align-items: center; gap: 16px; text-decoration: none; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 20px; transition: border-color 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.borderColor='#cbd5e1';this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)'" onmouseout="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+      <div style="flex: 1; text-align: right;">
+        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 2px;">Next</div>
+        <div style="font-size: 15px; font-weight: 500; color: #0f172a;">Cart Management</div>
+      </div>
+      <span style="color: #94a3b8; font-size: 18px;">›</span>
+    </a>
+  </div>
 
 </body>
 </html>

@@ -39,7 +39,11 @@
   <div class="message">
     <h1>✗ Payment Cancelled</h1>
     <p>Your purchase was cancelled.</p>
-    <a href="https://js.tip4serv.com/demo.html" class="btn">← Return to Demo</a>
+    <a id="return-btn" href="https://js.tip4serv.com/demo.html" class="btn">← Return to Demo</a>
   </div>
+  <script>
+    const returnUrl = new URLSearchParams(window.location.search).get('return');
+    if (returnUrl) document.getElementById('return-btn').href = returnUrl;
+  </script>
 </body>
 </html>
