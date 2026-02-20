@@ -7,4 +7,4 @@ export const POPUP_WIDTH = 500;
 export const POPUP_HEIGHT = 700;
 export const POPUP_TIMEOUT = 15 * 60 * 1000; // 15 minutes
 export const MESSAGE_SOURCE = "tip4serv-checkout";
-export const LOGO_URL = "https://js.tip4serv.com/t4s_logo_gray.webp";
+export const LOGO_URL = "https://js.tip4serv.com/assets/t4s_logo_gray.webp";
