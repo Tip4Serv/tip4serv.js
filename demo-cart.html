@@ -86,6 +86,38 @@
       background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
       padding: 1rem 1.25rem; margin-bottom: 2rem; font-size: 14px; color: #92400e;
     }
+    /* LLM copy banner */
+    .llm-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: #f0f0ff;
+      border: 1px dashed #5c54fc;
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      margin-bottom: 2rem;
+      font-size: 14px;
+      color: #475569;
+    }
+    .llm-banner span {
+      flex: 1;
+    }
+    .llm-copy-btn {
+      background: #5c54fc;
+      color: white;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s ease;
+    }
+    .llm-copy-btn:hover {
+      background: #4a42e0;
+    }
     /* Cart preview */
     .cart-preview {
       background: #f1f5f9; border-radius: 8px; padding: 1rem 1.25rem;
@@ -143,40 +175,45 @@
   <h1><span>Tip4Serv.js</span> Cart System</h1>
   <p class="subtitle">Add products to a cart, then checkout all at once.</p>
 
+  <div class="llm-banner">
+    <span>No time to read? Send this page to your AI agent.</span>
+    <button class="llm-copy-btn" onclick="copyLLM(this)">Copy for AI</button>
+  </div>
+
 
   <!-- ============================================ -->
   <!-- HTML MODE -->
   <!-- ============================================ -->
 
-  <h2 class="h2-with-badge">HTML Mode <span class="badge badge-beginner">Beginner</span></h2>
+  <h2 class="h2-with-badge">HTML Mode <span class="badge badge-intermediate">Intermediate</span></h2>
 
   <div class="section-intro">
     <p>Use <code>tip4serv-add-cart-btn</code> class to add items, and <code>tip4serv-open-cart-btn</code> to open checkout. Same <code>data-*</code> attributes as buy buttons.</p>
   </div>
 
   <div class="demo-section">
-    <h3 class="h3-with-badge">Add to Cart & Checkout <span class="badge badge-beginner">Beginner</span></h3>
+    <h3 class="h3-with-badge">Add to Cart & Checkout <span class="badge badge-intermediate">Intermediate</span></h3>
     <p class="example-desc">Click products to add them to the cart, then open checkout. Try adding the same product twice — quantity stacks!</p>
 
     <div class="product-grid">
       <div class="product-card">
         <h4>VIP</h4>
         <p>Subscription product</p>
-        <button class="tip4serv-add-cart-btn" data-product="vip" onclick="refreshCartPreview()">
+        <button class="tip4serv-add-cart-btn" data-product="vip" onclick="this.dataset.originalText=this.dataset.originalText||this.textContent.trim();this.textContent='Added to cart';setTimeout(()=>this.textContent=this.dataset.originalText,1000);refreshCartPreview()">
           Add to Cart
         </button>
       </div>
       <div class="product-card">
         <h4>50 Coins x5</h4>
         <p>Chosen Quantity: 5</p>
-        <button class="tip4serv-add-cart-btn" data-product="50-coins" data-quantity="5" data-subscription="false" onclick="refreshCartPreview()">
+        <button class="tip4serv-add-cart-btn" data-product="50-coins" data-quantity="5" data-subscription="false" onclick="this.dataset.originalText=this.dataset.originalText||this.textContent.trim();this.textContent='Added to cart';setTimeout(()=>this.textContent=this.dataset.originalText,1000);refreshCartPreview()">
           Add to Cart
         </button>
       </div>
       <div class="product-card">
         <h4>15 Mystery Box LVL 5</h4>
         <p>One-time product</p>
-        <button class="tip4serv-add-cart-btn" data-product="15-mystery-box-lvl-5" data-subscription="false" onclick="refreshCartPreview()">
+        <button class="tip4serv-add-cart-btn" data-product="15-mystery-box-lvl-5" data-subscription="false" onclick="this.dataset.originalText=this.dataset.originalText||this.textContent.trim();this.textContent='Added to cart';setTimeout(()=>this.textContent=this.dataset.originalText,1000);refreshCartPreview()">
           Add to Cart
         </button>
       </div>
@@ -203,15 +240,15 @@
     </div>
 
     <pre><span class="hljs-comment">&lt;!-- Add to cart buttons --&gt;</span>
-<span class="hljs-punctuation">&lt;</span><span class="hljs-tag">button</span> <span class="hljs-attr">class</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"tip4serv-add-cart-btn"</span> <span class="hljs-attr">data-product</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"vip"</span><span class="hljs-punctuation">&gt;</span>
+<span class="hljs-punctuation">&lt;</span><span class="hljs-tag">button</span> <span class="hljs-attr">class</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"tip4serv-add-cart-btn"</span> <span class="hljs-attr">data-product</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"vip"</span> <span class="hljs-attr">onclick</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"this.dataset.originalText=this.dataset.originalText||this.textContent.trim();this.textContent='Added to cart';setTimeout(()=&gt;this.textContent=this.dataset.originalText,1000);refreshCartPreview()"</span><span class="hljs-punctuation">&gt;</span>
   <span class="hljs-text">Add to Cart</span>
 <span class="hljs-punctuation">&lt;/</span><span class="hljs-tag">button</span><span class="hljs-punctuation">&gt;</span>
 
-<span class="hljs-punctuation">&lt;</span><span class="hljs-tag">button</span> <span class="hljs-attr">class</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"tip4serv-add-cart-btn"</span> <span class="hljs-attr">data-product</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"50-coins"</span> <span class="hljs-attr">data-quantity</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"5"</span> <span class="hljs-attr">data-subscription</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"false"</span><span class="hljs-punctuation">&gt;</span>
+<span class="hljs-punctuation">&lt;</span><span class="hljs-tag">button</span> <span class="hljs-attr">class</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"tip4serv-add-cart-btn"</span> <span class="hljs-attr">data-product</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"50-coins"</span> <span class="hljs-attr">data-quantity</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"5"</span> <span class="hljs-attr">data-subscription</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"false"</span> <span class="hljs-attr">onclick</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"this.dataset.originalText=this.dataset.originalText||this.textContent.trim();this.textContent='Added to cart';setTimeout(()=&gt;this.textContent=this.dataset.originalText,1000);refreshCartPreview()"</span><span class="hljs-punctuation">&gt;</span>
   <span class="hljs-text">Add to Cart</span>
 <span class="hljs-punctuation">&lt;/</span><span class="hljs-tag">button</span><span class="hljs-punctuation">&gt;</span>
 
-<span class="hljs-punctuation">&lt;</span><span class="hljs-tag">button</span> <span class="hljs-attr">class</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"tip4serv-add-cart-btn"</span> <span class="hljs-attr">data-product</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"15-mystery-box-lvl-5"</span> <span class="hljs-attr">data-subscription</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"false"</span><span class="hljs-punctuation">&gt;</span>
+<span class="hljs-punctuation">&lt;</span><span class="hljs-tag">button</span> <span class="hljs-attr">class</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"tip4serv-add-cart-btn"</span> <span class="hljs-attr">data-product</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"15-mystery-box-lvl-5"</span> <span class="hljs-attr">data-subscription</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"false"</span> <span class="hljs-attr">onclick</span><span class="hljs-punctuation">=</span><span class="hljs-attr-value">"this.dataset.originalText=this.dataset.originalText||this.textContent.trim();this.textContent='Added to cart';setTimeout(()=&gt;this.textContent=this.dataset.originalText,1000);refreshCartPreview()"</span><span class="hljs-punctuation">&gt;</span>
   <span class="hljs-text">Add to Cart</span>
 <span class="hljs-punctuation">&lt;/</span><span class="hljs-tag">button</span><span class="hljs-punctuation">&gt;</span>
 
@@ -387,6 +424,21 @@
 
     // Refresh previews on page load
     refreshCartPreview();
+  </script>
+
+  <script>
+    async function copyLLM(btn) {
+      try {
+        const res = await fetch('LLM.txt');
+        const text = await res.text();
+        await navigator.clipboard.writeText(text);
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy for AI', 2000);
+      } catch {
+        btn.textContent = 'Failed';
+        setTimeout(() => btn.textContent = 'Copy for AI', 2000);
+      }
+    }
   </script>
 
   <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #e2e8f0; display: flex;">
