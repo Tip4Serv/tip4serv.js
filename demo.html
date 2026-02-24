@@ -148,6 +148,33 @@
       font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
       margin-top: 1rem;
     }
+    .code-snippet {
+      position: relative;
+      margin-top: 1rem;
+    }
+    .code-snippet pre {
+      margin-top: 0;
+      padding-top: 2.5rem;
+    }
+    .code-copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      z-index: 2;
+    }
+    .code-copy-btn:hover {
+      background: #334155;
+      border-color: #475569;
+    }
     /* Syntax highlighting */
     .hljs-keyword { color: #c792ea; }
     .hljs-string { color: #c3e88d; }
@@ -517,7 +544,7 @@
   </div>
 
   <!-- Quickstart -->
-  <div class="section-intro" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-left: 3px solid #10b981;">
+  <div class="section-intro" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); padding: 1.25rem; margin-bottom: 2rem; border: none; border-left: 3px solid #10b981; border-radius: 8px;">
     <h3 style="margin-top: 0;">Quickstart (30 seconds)</h3>
     <p style="margin: 0 0 0.5rem 0;">Add this script tag to your page:</p>
     <code style="background: white; padding: 4px 8px; border-radius: 4px; display: inline-block;">&lt;script src="https://js.tip4serv.com/tip4serv.min.js?v=VERSION" data-store-id="YOUR_STORE_ID"&gt;&lt;/script&gt;</code>
@@ -1155,6 +1182,37 @@
         setTimeout(() => btn.textContent = 'Copy for AI', 2000);
       }
     }
+
+    function initCodeCopyButtons() {
+      document.querySelectorAll('pre').forEach((pre) => {
+        if (pre.parentElement?.classList.contains('code-snippet')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'code-snippet';
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'code-copy-btn';
+        btn.textContent = 'Copy';
+
+        btn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(pre.innerText.replace(/\u00A0/g, ' '));
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+          } catch {
+            btn.textContent = 'Failed';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+          }
+        });
+
+        wrapper.appendChild(btn);
+      });
+    }
+
+    initCodeCopyButtons();
   </script>
 
   <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #e2e8f0; display: flex;">
