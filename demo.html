@@ -10,12 +10,57 @@
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-      max-width: 900px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 3rem 2rem;
+      padding: 3rem 2rem 3rem calc(2rem + 250px);
       background: #ffffff;
       color: #334155;
       line-height: 1.6;
+    }
+    .docs-sidebar {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      width: 220px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+      z-index: 1000;
+    }
+    .docs-sidebar-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .docs-sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .docs-sidebar-link {
+      display: block;
+      text-decoration: none;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .docs-sidebar-link:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+    .docs-sidebar-link.active {
+      border-color: #5c54fc;
+      background: #f0f0ff;
+      color: #4338ca;
     }
     h1 {
       color: #0f172a;
@@ -414,6 +459,30 @@
     .llm-copy-btn:hover {
       background: #4a42e0;
     }
+    @media (max-width: 1024px) {
+      body {
+        max-width: 900px;
+        padding: 2rem 1.25rem;
+      }
+      .docs-sidebar {
+        position: static;
+        width: 100%;
+        margin-bottom: 1.25rem;
+      }
+      .docs-sidebar-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .docs-sidebar-link {
+        flex: 1;
+        min-width: 180px;
+        text-align: center;
+      }
+      .llm-banner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
     @media (max-width: 640px) {
       .info-grid {
         grid-template-columns: 1fr;
@@ -422,6 +491,14 @@
   </style>
 </head>
 <body>
+  <aside class="docs-sidebar" aria-label="Demo navigation">
+    <div class="docs-sidebar-title">Navigation</div>
+    <nav class="docs-sidebar-nav">
+      <a class="docs-sidebar-link active" href="demo.html">Checkout</a>
+      <a class="docs-sidebar-link" href="demo-cart.html">Cart System</a>
+    </nav>
+  </aside>
+
   <!-- Lightbox viewer -->
   <div class="lightbox" id="lightbox" onclick="closeLightbox()">
     <span class="lightbox-close">&times;</span>
