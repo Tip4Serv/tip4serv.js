@@ -48,9 +48,10 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           # demo.html
           sed -i 's|tip4serv.min.js"|tip4serv.min.js?v='"$VERSION"'"|g' demo.html
-          sed -i 's|src="tip4serv.js"|src="https://js.tip4serv.com/tip4serv.min.js?v='"$VERSION"'"|g' demo.html
+          sed -i 's|tip4serv.min.js?v=VERSION"|tip4serv.min.js?v='"$VERSION"'"|g' demo.html
           # demo-cart.html
           sed -i 's|tip4serv.min.js"|tip4serv.min.js?v='"$VERSION"'"|g' demo-cart.html
+          sed -i 's|tip4serv.min.js?v=VERSION"|tip4serv.min.js?v='"$VERSION"'"|g' demo-cart.html
           # LLM.txt
           sed -i 's|tip4serv.min.js"|tip4serv.min.js?v='"$VERSION"'"|g' LLM.txt
           echo "✅ Updated demo pages with version $VERSION"
