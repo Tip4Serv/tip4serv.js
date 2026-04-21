@@ -3,10 +3,11 @@
  * @version 1.0.0
  */
 
-import type { CheckoutOptions, CartAddOptions, CartOpenOptions } from "./types";
+import type { CheckoutOptions, CartAddOptions, CartOpenOptions, OAuthConnectOptions, OAuthSaveOptions } from "./types";
 import { Checkout } from "./checkout";
 import { Cart } from "./cart";
 import { HTMLAdapter } from "./html_adapter";
+import { OAuthManager } from "./oauth";
 
 // ============================================================================
 // INITIALIZATION
@@ -15,6 +16,7 @@ import { HTMLAdapter } from "./html_adapter";
 const checkout_instance = new Checkout();
 const cart_instance = new Cart(checkout_instance);
 const html_adapter = new HTMLAdapter(checkout_instance, cart_instance);
+const oauth_instance = new OAuthManager();
 
 // Auto-init HTML adapter
 html_adapter.init();
@@ -31,6 +33,12 @@ const Tip4Serv = {
       Open: (options?: CartOpenOptions) => cart_instance.open(options),
       Clear: () => cart_instance.clear(),
     },
+  },
+  OAuth: {
+    Connect: (options: OAuthConnectOptions) => oauth_instance.connect(options),
+    Save: (options: OAuthSaveOptions) => oauth_instance.save(options),
+    Token: () => oauth_instance.token(),
+    Disconnect: () => oauth_instance.disconnect(),
   },
   version: "1.0.0",
 };

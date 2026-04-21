@@ -373,6 +373,71 @@ Tip4Serv.Checkout.Cart.Clear();
 
 ---
 
+## OAuth Integration
+
+Tip4Serv.js also includes browser-side OAuth helpers for user authentication.
+
+### Available methods
+
+```js
+await Tip4Serv.OAuth.Connect({
+  store_id: 762,
+  return_url: "https://example.com/oauth/callback"
+});
+
+Tip4Serv.OAuth.Save({ token: accessToken });
+
+const token = Tip4Serv.OAuth.Token();
+
+Tip4Serv.OAuth.Disconnect();
+```
+
+### Behavior
+
+- `Tip4Serv.OAuth.Connect()` validates `store_id` and `return_url`, registers an OAuth client, creates PKCE values, stores state locally, then redirects the browser to Tip4Serv authorization.
+- `Tip4Serv.OAuth.Save()` validates the token format and rejects expired / inactive JWT tokens before saving them.
+- `Tip4Serv.OAuth.Token()` returns the saved token and re-validates it before returning.
+- `Tip4Serv.OAuth.Disconnect()` clears the stored token and local OAuth session data.
+
+### Typical callback flow
+
+After the user returns to your `return_url`, exchange the authorization code for an access token, then save it:
+
+```js
+const params = new URLSearchParams(window.location.search);
+const code = params.get("code");
+const returnedState = params.get("state");
+const savedState = sessionStorage.getItem("tip4servjs-oauth-state");
+const rawClient = localStorage.getItem("tip4servjs-oauth-client");
+const codeVerifier = sessionStorage.getItem("tip4servjs-oauth-verifier");
+
+if (!code || !rawClient || !codeVerifier || returnedState !== savedState) {
+  throw new Error("OAuth callback validation failed.");
+}
+
+const client = JSON.parse(rawClient);
+
+const response = await fetch("https://auth.tip4serv.com/token", {
+  method: "POST",
+  credentials: "omit",
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded"
+  },
+  body: new URLSearchParams({
+    grant_type: "authorization_code",
+    code,
+    redirect_uri: "https://example.com/oauth/callback",
+    client_id: client.client_id,
+    code_verifier: codeVerifier
+  }).toString()
+});
+
+const data = await response.json();
+Tip4Serv.OAuth.Save({ token: data.access_token });
+```
+
+---
+
 ## Quick answers for common tasks
 
 **"How do I add a buy button?"**
@@ -389,3 +454,12 @@ Tip4Serv.Checkout.Cart.Clear();
 
 **"How do I pass custom fields?"**
 → HTML: `data-custom-fields='{"field_id": "value"}'`. JS: `customFields: { 123: "value" }`.
+
+**"How do I start the OAuth flow?"**
+→ `await Tip4Serv.OAuth.Connect({ store_id: 762, return_url: "https://example.com/oauth/callback" })`
+
+**"How do I save the OAuth token?"**
+→ `Tip4Serv.OAuth.Save({ token: accessToken })`
+
+**"How do I read or clear the OAuth token?"**
+→ `Tip4Serv.OAuth.Token()` returns it, `Tip4Serv.OAuth.Disconnect()` clears it.

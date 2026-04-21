@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tip4Serv.js — OAuth Integration</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 2rem 3rem calc(2rem + 250px);
+      background: #ffffff;
+      color: #334155;
+      line-height: 1.6;
+    }
+    .docs-sidebar {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      width: 220px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+      z-index: 1000;
+    }
+    .docs-sidebar-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .docs-sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .docs-sidebar-link {
+      display: block;
+      text-decoration: none;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .docs-sidebar-link:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+    .docs-sidebar-link.active {
+      border-color: #5c54fc;
+      background: #f0f0ff;
+      color: #4338ca;
+    }
+    h1 { color: #0f172a; font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+    h1 span { color: #5c54fc; }
+    .subtitle { color: #64748b; font-size: 1.1rem; margin-bottom: 2rem; }
+    h2 {
+      color: #0f172a;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    h3 { color: #1e293b; font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
+    .section-intro {
+      background: #f8fafc;
+      padding: 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      border-left: 3px solid #5c54fc;
+    }
+    .warning-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+      font-size: 14px;
+      color: #92400e;
+    }
+    .success-box {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+      font-size: 14px;
+      color: #166534;
+    }
+    .api-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .api-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+    .demo-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+    .button-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .demo-button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    .demo-button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+    .demo-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+    .demo-button-primary {
+      background: #5c54fc;
+      color: #ffffff;
+    }
+    .demo-button-secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .demo-output {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 13px;
+      font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .api-card code,
+    .inline-code {
+      background: #eef2ff;
+      color: #4338ca;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.7;
+      margin-top: 1rem;
+      font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .steps {
+      display: grid;
+      gap: 1rem;
+    }
+    .step {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      background: #ffffff;
+    }
+    .step-number {
+      display: inline-flex;
+      width: 26px;
+      height: 26px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #5c54fc;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      margin-right: 8px;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .table th, .table td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+    .table th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-size: 13px;
+    }
+    .table tr:last-child td { border-bottom: none; }
+    .muted { color: #64748b; }
+    @media (max-width: 1024px) {
+      body {
+        max-width: 900px;
+        padding: 2rem 1.25rem;
+      }
+      .docs-sidebar {
+        position: static;
+        width: 100%;
+        margin-bottom: 1.25rem;
+      }
+      .docs-sidebar-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .docs-sidebar-link {
+        flex: 1;
+        min-width: 180px;
+        text-align: center;
+      }
+    }
+    @media (max-width: 720px) {
+      .api-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <aside class="docs-sidebar" aria-label="Documentation navigation">
+    <div class="docs-sidebar-title">Navigation</div>
+    <nav class="docs-sidebar-nav">
+      <a class="docs-sidebar-link" href="demo.html">Checkout</a>
+      <a class="docs-sidebar-link" href="demo-cart.html">Cart System</a>
+      <a class="docs-sidebar-link active" href="oauth-integration.html">OAuth Integration</a>
+    </nav>
+  </aside>
+
+  <h1><span>Tip4Serv.js</span> OAuth Integration</h1>
+  <p class="subtitle">Connect a Tip4Serv user, store the access token safely, reuse it later, and disconnect cleanly.</p>
+
+  <div class="warning-box">
+    <strong>Important:</strong> <span class="inline-code">Tip4Serv.OAuth.Connect()</span> only starts the OAuth flow. Your <span class="inline-code">return_url</span> page must still exchange the authorization code for an access token, then call <span class="inline-code">Tip4Serv.OAuth.Save()</span>. If you call <span class="inline-code">Save()</span> without <span class="inline-code">token</span>, it will read <span class="inline-code">tip4serv_access_token</span> from the URL query.
+  </div>
+
+  <h2>Interactive Demo</h2>
+  <div class="demo-card">
+    <p>This demo uses the real browser-side OAuth flow with no backend. Clicking connect redirects to Tip4Serv authorization and returns to this page after approval. The token button only works once a real token has been saved.</p>
+    <div class="button-row">
+      <button id="oauthDemoConnectButton" class="demo-button demo-button-primary" type="button">Connect</button>
+      <button id="oauthDemoShowTokenButton" class="demo-button demo-button-secondary" type="button" disabled>Show Token</button>
+    </div>
+    <div id="oauthDemoOutput" class="demo-output">Status: not connected</div>
+  </div>
+
+  <h2>Available Methods</h2>
+  <div class="api-grid">
+    <section class="api-card">
+      <h3>Tip4Serv.OAuth.Connect()</h3>
+      <p>Starts the Tip4Serv OAuth authorization flow and redirects the browser to the authorization page.</p>
+      <pre>await Tip4Serv.OAuth.Connect({
+  return_url: "https://example.com/oauth/callback"
+});</pre>
+    </section>
+    <section class="api-card">
+      <h3>Tip4Serv.OAuth.Save()</h3>
+      <p>Validates the token format and lifetime before saving it to local storage. If <span class="inline-code">token</span> is omitted, it reads <span class="inline-code">tip4serv_access_token</span> from the URL query.</p>
+      <pre>Tip4Serv.OAuth.Save({
+  token: accessToken
+});</pre>
+    </section>
+    <section class="api-card">
+      <h3>Tip4Serv.OAuth.Token()</h3>
+      <p>Returns the saved token. Throws if none is stored or if the stored token is no longer valid.</p>
+      <pre>const token = Tip4Serv.OAuth.Token();</pre>
+    </section>
+    <section class="api-card">
+      <h3>Tip4Serv.OAuth.Disconnect()</h3>
+      <p>Clears the stored OAuth token and local OAuth session data.</p>
+      <pre>Tip4Serv.OAuth.Disconnect();</pre>
+    </section>
+  </div>
+
+  <h2>Method Reference</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Arguments</th>
+        <th>Behavior</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="inline-code">Connect()</span></td>
+        <td><span class="inline-code">{ return_url: string, store_id?: number }</span></td>
+        <td>Validates the store ID from <span class="inline-code">store_id</span> or the script tag, validates the callback URL, registers a public OAuth client, generates PKCE values, stores the state locally, then redirects the browser.</td>
+      </tr>
+      <tr>
+        <td><span class="inline-code">Save()</span></td>
+        <td><span class="inline-code">{ token?: string }</span></td>
+        <td>Ensures the token is a decodable JWT and rejects expired or not-yet-active tokens before storage. If <span class="inline-code">token</span> is omitted, it falls back to <span class="inline-code">tip4serv_access_token</span> in the URL query.</td>
+      </tr>
+      <tr>
+        <td><span class="inline-code">Token()</span></td>
+        <td>None</td>
+        <td>Loads the stored token, validates it again, and returns it as a string.</td>
+      </tr>
+      <tr>
+        <td><span class="inline-code">Disconnect()</span></td>
+        <td>None</td>
+        <td>Removes the stored token, registered OAuth client cache, PKCE verifier, and CSRF state.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Full Integration Flow</h2>
+  <div class="steps">
+    <section class="step">
+      <h3><span class="step-number">1</span>Create a Tip4Serv Log in button</h3>
+      <pre>&lt;button id="connectButton"&gt;Connect Tip4Serv&lt;/button&gt;
+
+&lt;script&gt;
+  document.getElementById("connectButton").addEventListener("click", async () =&gt; {
+    await Tip4Serv.OAuth.Connect({
+      return_url: "https://example.com/oauth/callback"
+    });
+  });
+&lt;/script&gt;</pre>
+    </section>
+
+    <section class="step">
+      <h3><span class="step-number">2</span>Save the user access token on your callback page</h3>
+      <p class="muted">On your callback URL, simply run this line. If <span class="inline-code">tip4serv_access_token</span> is present in the query, the token is saved and you can access it later with <span class="inline-code">Tip4Serv.OAuth.Token()</span>.</p>
+      <pre>Tip4Serv.OAuth.Save();</pre>
+    </section>
+
+    <section class="step">
+      <h3><span class="step-number">3</span>Use the token later</h3>
+      <p class="muted">In this example, we are fetching user payments. To learn more about other routes, check this: <a href="https://tip4serv.gitbook.io/tip4serv-api/log-in-via-tip4serv" target="_blank" rel="noopener noreferrer">https://tip4serv.gitbook.io/tip4serv-api/log-in-via-tip4serv</a></p>
+      <pre>const token = Tip4Serv.OAuth.Token();
+
+const response = await fetch("https://api.tip4serv.com/v1/user/payments?page=1", {
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});</pre>
+    </section>
+  </div>
+
+  <script src="tip4serv.min.js" data-store-id="762"></script>
+  <script>
+    const oauthDemoConnectButton = document.getElementById("oauthDemoConnectButton");
+    const oauthDemoShowTokenButton = document.getElementById("oauthDemoShowTokenButton");
+    const oauthDemoOutput = document.getElementById("oauthDemoOutput");
+
+    function getOAuthDemoReturnUrl() {
+      return `${window.location.origin}${window.location.pathname}`;
+    }
+
+    async function handleOAuthDemoCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const error = params.get("error");
+
+      if (error) {
+        oauthDemoOutput.textContent = `OAuth error: ${error}`;
+        window.history.replaceState({}, document.title, getOAuthDemoReturnUrl());
+        return false;
+      }
+
+      if (!params.has("tip4serv_access_token")) {
+        return null;
+      }
+
+      oauthDemoOutput.textContent = "Saving OAuth token from callback URL...";
+
+      try {
+        Tip4Serv.OAuth.Save();
+        return true;
+      } catch (error) {
+        oauthDemoOutput.textContent = `OAuth callback error: ${error instanceof Error ? error.message : String(error)}`;
+        window.history.replaceState({}, document.title, getOAuthDemoReturnUrl());
+        return false;
+      }
+    }
+
+    function refreshOAuthDemo() {
+      try {
+        const token = Tip4Serv.OAuth.Token();
+        oauthDemoConnectButton.textContent = "Disconnect";
+        oauthDemoShowTokenButton.disabled = false;
+        oauthDemoOutput.textContent = `Status: connected\n\nStored token preview: ${token.slice(0, 24)}...${token.slice(-12)}`;
+      } catch {
+        oauthDemoConnectButton.textContent = "Connect";
+        oauthDemoShowTokenButton.disabled = true;
+        oauthDemoOutput.textContent = "Status: not connected";
+      }
+    }
+
+    oauthDemoConnectButton.addEventListener("click", async () => {
+      try {
+        if (oauthDemoConnectButton.textContent === "Disconnect") {
+          Tip4Serv.OAuth.Disconnect();
+          refreshOAuthDemo();
+          return;
+        }
+
+        oauthDemoOutput.textContent = "Redirecting to Tip4Serv OAuth...";
+        await Tip4Serv.OAuth.Connect({
+          return_url: getOAuthDemoReturnUrl()
+        });
+      } catch (error) {
+        oauthDemoOutput.textContent = `Demo error: ${error instanceof Error ? error.message : String(error)}`;
+      }
+    });
+
+    oauthDemoShowTokenButton.addEventListener("click", () => {
+      try {
+        const token = Tip4Serv.OAuth.Token();
+        oauthDemoOutput.textContent = `Status: connected\n\nFull token:\n${token}`;
+      } catch (error) {
+        oauthDemoOutput.textContent = `Demo error: ${error instanceof Error ? error.message : String(error)}`;
+        refreshOAuthDemo();
+      }
+    });
+
+    handleOAuthDemoCallback().then((result) => {
+      if (result !== false) {
+        refreshOAuthDemo();
+      }
+    });
+  </script>
+</body>
+</html>
