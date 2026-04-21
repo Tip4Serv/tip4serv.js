@@ -11,6 +11,7 @@ import {
   OAUTH_TOKEN_STORAGE_KEY,
   OAUTH_VERIFIER_STORAGE_KEY,
 } from "./constants";
+import { get_store_id_from_script } from "./utils";
 import type { OAuthConnectOptions, OAuthSaveOptions } from "./types";
 
 interface OAuthClient {
@@ -36,7 +37,7 @@ export class OAuthManager {
   async connect(options: OAuthConnectOptions): Promise<void> {
     this.assert_browser_api("Tip4Serv.OAuth.Connect() requires a browser environment.");
 
-    const store_id = this.parse_store_id(options?.store_id);
+    const store_id = this.parse_store_id(options?.store_id ?? get_store_id_from_script());
     const return_url = this.parse_url(options?.return_url, "return_url");
     const client = await this.ensure_client(return_url);
     const verifier = this.random_string(64);
@@ -61,12 +62,20 @@ export class OAuthManager {
     window.location.assign(`${AUTH_BASE}/authorize?${params.toString()}`);
   }
 
-  save(options: OAuthSaveOptions): void {
+  save(options?: OAuthSaveOptions): void {
     this.assert_browser_api("Tip4Serv.OAuth.Save() requires a browser environment.");
 
-    const token = this.parse_token(options?.token);
+    const params = new URLSearchParams(window.location.search);
+    const token = this.parse_token(options?.token ?? params.get("tip4serv_access_token") ?? undefined);
     this.verify_token(token);
     window.localStorage.setItem(OAUTH_TOKEN_STORAGE_KEY, token);
+
+    if (!options?.token && params.has("tip4serv_access_token")) {
+      params.delete("tip4serv_access_token");
+      const next_query = params.toString();
+      const next_url = `${window.location.pathname}${next_query ? `?${next_query}` : ""}${window.location.hash}`;
+      window.history.replaceState({}, document.title, next_url);
+    }
   }
 
   token(): string {
@@ -102,9 +111,9 @@ export class OAuthManager {
     }
   }
 
-  private parse_store_id(value: number): number {
-    if (!Number.isInteger(value) || value <= 0) {
-      throw new Error("store_id must be a positive integer.");
+  private parse_store_id(value: number | undefined): number {
+    if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
+      throw new Error("store_id is required. Add data-store-id to your script tag or pass store_id in options.");
     }
 
     return value;
@@ -130,9 +139,9 @@ export class OAuthManager {
     return url.toString();
   }
 
-  private parse_token(value: string): string {
+  private parse_token(value: string | undefined): string {
     if (typeof value !== "string" || value.trim() === "") {
-      throw new Error("token must be a non-empty string.");
+      throw new Error("token must be provided in options.token or URL query param tip4serv_access_token.");
     }
 
     return value.trim();

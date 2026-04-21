@@ -106,10 +106,10 @@ export interface CartItem {
 }
 
 export interface OAuthConnectOptions {
-  store_id: number;
+  store_id?: number;
   return_url: string;
 }
 
 export interface OAuthSaveOptions {
-  token: string;
+  token?: string;
 }

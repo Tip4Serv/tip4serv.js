@@ -261,7 +261,7 @@
   <p class="subtitle">Connect a Tip4Serv user, store the access token safely, reuse it later, and disconnect cleanly.</p>
 
   <div class="warning-box">
-    <strong>Important:</strong> <span class="inline-code">Tip4Serv.OAuth.Connect()</span> only starts the OAuth flow. Your <span class="inline-code">return_url</span> page must still exchange the authorization code for an access token, then call <span class="inline-code">Tip4Serv.OAuth.Save()</span>.
+    <strong>Important:</strong> <span class="inline-code">Tip4Serv.OAuth.Connect()</span> only starts the OAuth flow. Your <span class="inline-code">return_url</span> page must still exchange the authorization code for an access token, then call <span class="inline-code">Tip4Serv.OAuth.Save()</span>. If you call <span class="inline-code">Save()</span> without <span class="inline-code">token</span>, it will read <span class="inline-code">tip4serv_access_token</span> from the URL query.
   </div>
 
   <h2>Interactive Demo</h2>
@@ -280,13 +280,12 @@
       <h3>Tip4Serv.OAuth.Connect()</h3>
       <p>Starts the Tip4Serv OAuth authorization flow and redirects the browser to the authorization page.</p>
       <pre>await Tip4Serv.OAuth.Connect({
-  store_id: 762,
   return_url: "https://example.com/oauth/callback"
 });</pre>
     </section>
     <section class="api-card">
       <h3>Tip4Serv.OAuth.Save()</h3>
-      <p>Validates the token format and lifetime before saving it to local storage.</p>
+      <p>Validates the token format and lifetime before saving it to local storage. If <span class="inline-code">token</span> is omitted, it reads <span class="inline-code">tip4serv_access_token</span> from the URL query.</p>
       <pre>Tip4Serv.OAuth.Save({
   token: accessToken
 });</pre>
@@ -315,13 +314,13 @@
     <tbody>
       <tr>
         <td><span class="inline-code">Connect()</span></td>
-        <td><span class="inline-code">{ store_id: number, return_url: string }</span></td>
-        <td>Validates the store ID, validates the callback URL, registers a public OAuth client, generates PKCE values, stores the state locally, then redirects the browser.</td>
+        <td><span class="inline-code">{ return_url: string, store_id?: number }</span></td>
+        <td>Validates the store ID from <span class="inline-code">store_id</span> or the script tag, validates the callback URL, registers a public OAuth client, generates PKCE values, stores the state locally, then redirects the browser.</td>
       </tr>
       <tr>
         <td><span class="inline-code">Save()</span></td>
-        <td><span class="inline-code">{ token: string }</span></td>
-        <td>Ensures the token is a decodable JWT and rejects expired or not-yet-active tokens before storage.</td>
+        <td><span class="inline-code">{ token?: string }</span></td>
+        <td>Ensures the token is a decodable JWT and rejects expired or not-yet-active tokens before storage. If <span class="inline-code">token</span> is omitted, it falls back to <span class="inline-code">tip4serv_access_token</span> in the URL query.</td>
       </tr>
       <tr>
         <td><span class="inline-code">Token()</span></td>
@@ -339,13 +338,12 @@
   <h2>Full Integration Flow</h2>
   <div class="steps">
     <section class="step">
-      <h3><span class="step-number">1</span>Start the flow from your storefront</h3>
+      <h3><span class="step-number">1</span>Create a Tip4Serv Log in button</h3>
       <pre>&lt;button id="connectButton"&gt;Connect Tip4Serv&lt;/button&gt;
 
 &lt;script&gt;
   document.getElementById("connectButton").addEventListener("click", async () =&gt; {
     await Tip4Serv.OAuth.Connect({
-      store_id: 762,
       return_url: "https://example.com/oauth/callback"
     });
   });
@@ -353,43 +351,14 @@
     </section>
 
     <section class="step">
-      <h3><span class="step-number">2</span>Exchange the authorization code on your callback page</h3>
-      <pre>const params = new URLSearchParams(window.location.search);
-const code = params.get("code");
-const returnedState = params.get("state");
-const savedState = sessionStorage.getItem("tip4servjs-oauth-state");
-const rawClient = localStorage.getItem("tip4servjs-oauth-client");
-const codeVerifier = sessionStorage.getItem("tip4servjs-oauth-verifier");
-
-if (!code || !rawClient || !codeVerifier || returnedState !== savedState) {
-  throw new Error("OAuth callback validation failed.");
-}
-
-const client = JSON.parse(rawClient);
-
-const body = new URLSearchParams({
-  grant_type: "authorization_code",
-  code,
-  redirect_uri: "https://example.com/oauth/callback",
-  client_id: client.client_id,
-  code_verifier: codeVerifier
-});
-
-const response = await fetch("https://auth.tip4serv.com/token", {
-  method: "POST",
-  credentials: "omit",
-  headers: {
-    "Content-Type": "application/x-www-form-urlencoded"
-  },
-  body: body.toString()
-});
-
-const data = await response.json();
-Tip4Serv.OAuth.Save({ token: data.access_token });</pre>
+      <h3><span class="step-number">2</span>Save the user access token on your callback page</h3>
+      <p class="muted">On your callback URL, simply run this line. If <span class="inline-code">tip4serv_access_token</span> is present in the query, the token is saved and you can access it later with <span class="inline-code">Tip4Serv.OAuth.Token()</span>.</p>
+      <pre>Tip4Serv.OAuth.Save();</pre>
     </section>
 
     <section class="step">
-      <h3><span class="step-number">3</span>Reuse the token later</h3>
+      <h3><span class="step-number">3</span>Use the token later</h3>
+      <p class="muted">In this example, we are fetching user payments. To learn more about other routes, check this: <a href="https://tip4serv.gitbook.io/tip4serv-api/log-in-via-tip4serv" target="_blank" rel="noopener noreferrer">https://tip4serv.gitbook.io/tip4serv-api/log-in-via-tip4serv</a></p>
       <pre>const token = Tip4Serv.OAuth.Token();
 
 const response = await fetch("https://api.tip4serv.com/v1/user/payments?page=1", {
@@ -400,10 +369,8 @@ const response = await fetch("https://api.tip4serv.com/v1/user/payments?page=1",
     </section>
   </div>
 
-  <script src="tip4serv.min.js"></script>
+  <script src="tip4serv.min.js" data-store-id="762"></script>
   <script>
-    const OAUTH_DEMO_STORE_ID = 762;
-    const OAUTH_DEMO_AUTH_SERVER = "https://auth.tip4serv.com";
     const oauthDemoConnectButton = document.getElementById("oauthDemoConnectButton");
     const oauthDemoShowTokenButton = document.getElementById("oauthDemoShowTokenButton");
     const oauthDemoOutput = document.getElementById("oauthDemoOutput");
@@ -414,8 +381,6 @@ const response = await fetch("https://api.tip4serv.com/v1/user/payments?page=1",
 
     async function handleOAuthDemoCallback() {
       const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      const returnedState = params.get("state");
       const error = params.get("error");
 
       if (error) {
@@ -424,51 +389,14 @@ const response = await fetch("https://api.tip4serv.com/v1/user/payments?page=1",
         return false;
       }
 
-      if (!code) {
+      if (!params.has("tip4serv_access_token")) {
         return null;
       }
 
-      const rawClient = localStorage.getItem("tip4servjs-oauth-client");
-      const codeVerifier = sessionStorage.getItem("tip4servjs-oauth-verifier");
-      const savedState = sessionStorage.getItem("tip4servjs-oauth-state");
-
-      if (!rawClient || !codeVerifier || !returnedState || returnedState !== savedState) {
-        oauthDemoOutput.textContent = "OAuth callback validation failed.";
-        window.history.replaceState({}, document.title, getOAuthDemoReturnUrl());
-        return false;
-      }
-
-      const client = JSON.parse(rawClient);
-      const body = new URLSearchParams({
-        grant_type: "authorization_code",
-        code,
-        redirect_uri: getOAuthDemoReturnUrl(),
-        client_id: client.client_id,
-        code_verifier: codeVerifier
-      });
-
-      oauthDemoOutput.textContent = "Completing OAuth callback...";
+      oauthDemoOutput.textContent = "Saving OAuth token from callback URL...";
 
       try {
-        const response = await fetch(`${OAUTH_DEMO_AUTH_SERVER}/token`, {
-          method: "POST",
-          credentials: "omit",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: body.toString()
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.access_token) {
-          throw new Error(data.error || data.message || "Token exchange failed.");
-        }
-
-        Tip4Serv.OAuth.Save({ token: data.access_token });
-        sessionStorage.removeItem("tip4servjs-oauth-verifier");
-        sessionStorage.removeItem("tip4servjs-oauth-state");
-        window.history.replaceState({}, document.title, getOAuthDemoReturnUrl());
+        Tip4Serv.OAuth.Save();
         return true;
       } catch (error) {
         oauthDemoOutput.textContent = `OAuth callback error: ${error instanceof Error ? error.message : String(error)}`;
@@ -500,7 +428,6 @@ const response = await fetch("https://api.tip4serv.com/v1/user/payments?page=1",
 
         oauthDemoOutput.textContent = "Redirecting to Tip4Serv OAuth...";
         await Tip4Serv.OAuth.Connect({
-          store_id: OAUTH_DEMO_STORE_ID,
           return_url: getOAuthDemoReturnUrl()
         });
       } catch (error) {

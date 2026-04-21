@@ -724,7 +724,7 @@ var Tip4ServModule = (() => {
   var OAuthManager = class {
     async connect(options) {
       this.assert_browser_api("Tip4Serv.OAuth.Connect() requires a browser environment.");
-      const store_id = this.parse_store_id(options?.store_id);
+      const store_id = this.parse_store_id(options?.store_id ?? get_store_id_from_script());
       const return_url = this.parse_url(options?.return_url, "return_url");
       const client = await this.ensure_client(return_url);
       const verifier = this.random_string(64);
@@ -747,9 +747,16 @@ var Tip4ServModule = (() => {
     }
     save(options) {
       this.assert_browser_api("Tip4Serv.OAuth.Save() requires a browser environment.");
-      const token = this.parse_token(options?.token);
+      const params = new URLSearchParams(window.location.search);
+      const token = this.parse_token(options?.token ?? params.get("tip4serv_access_token") ?? void 0);
       this.verify_token(token);
       window.localStorage.setItem(OAUTH_TOKEN_STORAGE_KEY, token);
+      if (!options?.token && params.has("tip4serv_access_token")) {
+        params.delete("tip4serv_access_token");
+        const next_query = params.toString();
+        const next_url = `${window.location.pathname}${next_query ? `?${next_query}` : ""}${window.location.hash}`;
+        window.history.replaceState({}, document.title, next_url);
+      }
     }
     token() {
       this.assert_browser_api("Tip4Serv.OAuth.Token() requires a browser environment.");
@@ -773,8 +780,8 @@ var Tip4ServModule = (() => {
       }
     }
     parse_store_id(value) {
-      if (!Number.isInteger(value) || value <= 0) {
-        throw new Error("store_id must be a positive integer.");
+      if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
+        throw new Error("store_id is required. Add data-store-id to your script tag or pass store_id in options.");
       }
       return value;
     }
@@ -795,7 +802,7 @@ var Tip4ServModule = (() => {
     }
     parse_token(value) {
       if (typeof value !== "string" || value.trim() === "") {
-        throw new Error("token must be a non-empty string.");
+        throw new Error("token must be provided in options.token or URL query param tip4serv_access_token.");
       }
       return value.trim();
     }
@@ -848,7 +855,7 @@ var Tip4ServModule = (() => {
     verify_token(token) {
       const parts = token.split(".");
       if (parts.length !== 3) {
-        throw new Error("token must be a valid JWT access token.");
+        return null;
       }
       const header = this.decode_jwt_part(parts[0], "token header");
       const payload = this.decode_jwt_part(parts[1], "token payload");
