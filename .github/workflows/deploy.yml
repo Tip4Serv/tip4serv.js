@@ -64,6 +64,7 @@ jobs:
           cp dist/tip4serv.esm.js deploy/
           cp demo.html deploy/
           cp demo-cart.html deploy/
+          cp oauth-integration.html deploy/
           cp thank-you.html deploy/
           cp cancelled.html deploy/
           cp LLM.txt deploy/
@@ -89,3 +90,4 @@ jobs:
           echo "- \`https://js.tip4serv.com/tip4serv.min.js?v=${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- \`https://js.tip4serv.com/demo.html\`" >> $GITHUB_STEP_SUMMARY
           echo "- \`https://js.tip4serv.com/demo-cart.html\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`https://js.tip4serv.com/oauth-integration.html\`" >> $GITHUB_STEP_SUMMARY
