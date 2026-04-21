@@ -20,9 +20,22 @@ function clean_declarations() {
   
   const files = fs.readdirSync(dist_dir);
   for (const file of files) {
-    if (file.endsWith(".d.ts") && file !== "tip4serv.d.ts") {
+    if (file.endsWith(".d.ts") && file !== "tip4serv.d.ts" && file !== "types.d.ts") {
       fs.unlinkSync(path.join(dist_dir, file));
     }
+  }
+}
+
+function sync_root_bundles() {
+  const files_to_copy = [
+    ["dist/tip4serv.js", "tip4serv.js"],
+    ["dist/tip4serv.min.js", "tip4serv.min.js"],
+    ["dist/tip4serv.js.map", "tip4serv.js.map"],
+    ["dist/tip4serv.min.js.map", "tip4serv.min.js.map"],
+  ];
+
+  for (const [source, target] of files_to_copy) {
+    fs.copyFileSync(path.join(__dirname, source), path.join(__dirname, target));
   }
 }
 
@@ -82,6 +95,7 @@ async function build() {
 
   await Promise.all([build_umd(), build_umd_min(), build_esm()]);
   clean_declarations();
+  sync_root_bundles();
   console.log("\nBuild complete!");
 }
 

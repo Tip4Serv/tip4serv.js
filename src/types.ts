@@ -104,3 +104,12 @@ export interface CartItem {
   serverSelection?: number;
   customFields?: Record<number | string, string | number | boolean>;
 }
+
+export interface OAuthConnectOptions {
+  store_id: number;
+  return_url: string;
+}
+
+export interface OAuthSaveOptions {
+  token: string;
+}
