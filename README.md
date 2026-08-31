@@ -740,7 +740,7 @@ Don't want to start from scratch?
 
 Use our open-source Next.js storefront as the foundation for your own custom store.
 
-💻 **[Tip4Serv Next.js Storefront](https://github.com/Tip4Serv/tip4serv-nextjs-storefront)**
+💻 **[Tip4Serv Next.js Storefront](https://github.com/Tip4Serv/nextjs-ecommerce-storefront-tip4serv)**
 
 ---
 
